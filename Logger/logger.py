@@ -19,9 +19,13 @@ class Logger:
     def __init__(self):
         self.loggingSystems = []
 
-    #def __del__(self):
-        #for system in self.loggingSystems:
-            #system.rescue()
+    def __del__(self):
+        self.halt()
+        self.loggerInitialized = False
+
+    def halt(self):
+        for system in self.loggingSystems:
+            system.rescue()
 
     def log(self, msg, channel=0):
         for system in self.loggingSystems:
