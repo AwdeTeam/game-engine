@@ -38,7 +38,9 @@ class TestStreamLogger(unittest.TestCase):
 
 class TestFileLogger(unittest.TestCase):
     def setUp(self):
-        try: os.remove("testlogs/test.log")
+        try: 
+            os.remove("testlogs/test.log")
+            os.remove("testlogs/test2.log")
         except: pass
         self.logInstance = Logger()
         self.logInstance.addLogger(loggers.FileLogger("testlogs/test.log", [0]))
@@ -64,6 +66,18 @@ class TestFileLogger(unittest.TestCase):
         log("hi again!")
         self.logInstance.halt()
         self.assertEqual(self.countLines("testlogs/test.log"), 2, "Log didn't successfully append")
+
+    def test_multiChannel(self):
+        self.logInstance.halt()
+        self.logInstance = Logger()
+        self.logInstance.addLogger(loggers.FileLogger("testlogs/test.log", [0]))
+        self.logInstance.addLogger(loggers.FileLogger("testlogs/test2.log", [0,1]))
+        setLoggerInstance(self.logInstance)
+        log("Hi there!", 0)
+        log("Hi there again!", 1)
+        self.logInstance.halt()
+        self.assertEqual(self.countLines("testlogs/test.log"), 1, "test.log didn't have the right number of lines")
+        self.assertEqual(self.countLines("testlogs/test2.log"), 2, "test2.log didn't have the right number of lines")
         
 
     #def tearDown(self):
