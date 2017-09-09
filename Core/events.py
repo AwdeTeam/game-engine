@@ -27,8 +27,9 @@ class CentralEventManager:
     def addEvent(self, event, poll):
         self.eventPollPair.append((event, poll))
     
-    def tick(self):
+    def update(self, state):
         for pair in self.eventPollPair:
             if(pair[1]()):
-                pair[0]()
+                pair[0](state)
+        self.eventPollPair = []
 
