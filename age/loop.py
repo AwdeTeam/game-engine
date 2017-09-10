@@ -6,6 +6,8 @@ def run(gameLogicManager, gameGraphicsManager):
     centralEventManager = CentralEventManager()
     while(gameRunning):
         t0 = time.time()
-        g_centralEventManager.update(g_gameLogicManager)
-    gameLogicManager.update(time.time() - t0)
-    gameGraphicsManager.update(time.time() - t0)
+        centralEventManager.update(gameLogicManager)
+        gameLogicManager.update(time.time() - t0)
+        gameGraphicsManager.update(time.time() - t0)
+
+    time.sleep(.1) # TODO: dynamic sleeping

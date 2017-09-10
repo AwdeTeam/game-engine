@@ -1,3 +1,4 @@
+import time
 import socket
 from multiprocessing import Process, Queue
 
@@ -54,7 +55,6 @@ class NetworkManager:
         self.acceptorWaitingSocket = None
         self.engineInputQueue = engineInputQueue
         self.engineOutputQueue = engineOutputQueue
-        self.startConnectionAcceptor()
         self.route()
 
     def route(self):
@@ -90,10 +90,12 @@ class NetworkManager:
             if data:
                 for s in self.clientSockets:
                     s.sendall(str(data).encode('ascii'))
+        
+        time.sleep(.1) # TODO: dynamic sleeping
     
     def startConnectionAcceptor(self, host, port):
         self.acceptorQueue = Queue()
-        self.acceptorProcess = Process(target=connectionAcceptor, args=(acceptorQueue, host, port))
+        self.acceptorProcess = Process(target=connectionAcceptor, args=(self.acceptorQueue, host, port))
         self.acceptorProcess.start()
         
     def startClientListener(self, socket, addr):
