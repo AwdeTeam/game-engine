@@ -1,4 +1,8 @@
 import sys
+sys.path.append("../")
+
+from age.logger.logger import *
+from age.logger import loggers
 
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtGui import QPainter, QColor, QFont
@@ -12,9 +16,10 @@ class PongWindow(QWidget):
         self.initUI()
 
     def initUI(self):
-       self.setGeometry(300, 300, 280, 170)
-       self.setWindowTitle("test")
-       self.show()
+        log("Initializing...")
+        self.setGeometry(300, 300, 280, 170)
+        self.setWindowTitle("test")
+        self.show()
 
     def paintEvent(self, event):
         qp = QPainter()
@@ -27,6 +32,14 @@ class PongWindow(QWidget):
         qp.fillRect(x, y, width, height, QColor(color[0],color[1],color[2]))
 
 if __name__ == '__main__':
+
+    logInstance = Logger()
+    logInstance.addLogger(loggers.StreamLogger([0]))
+    setLoggerInstance(logInstance)
+    log("Setting up window...")
+
     app = QApplication(sys.argv)
     ex = PongWindow()
-    sys.exit(app.exec_())
+    #sys.exit(app.exec_())
+    app.exec_()
+    log("Done!")
