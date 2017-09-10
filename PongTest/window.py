@@ -8,6 +8,50 @@ from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtGui import QPainter, QColor, QFont
 from PyQt5.QtCore import Qt
 
+import socket
+
+
+from multiprocessing import Process, Queue
+
+def connect(communicationQueue):
+    log("Setting up socket...")
+    
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    host = "localhost"
+    port = 6789
+
+    s.connect((host,port))
+
+    running = True
+    while running:
+        log("Socket listening...")
+        msg = recv_msg(s)
+        log("Received a message: " + str(msg))
+        if msg == "!STOP":
+            running = False
+    log("Shutting down socket")
+    s.close()
+
+# thanks to https://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
+# Read message length and unpack it into an integer
+def recv_msg(sock):
+    raw_msglen = recvall(sock, 4)
+    if not raw_msglen:
+        return None
+    msglen = struct.unpack('>I', raw_msglen)[0]
+    # Read the message data
+    return recvall(sock, msglen)
+
+# Helper function to recv n bytes or return None if EOF is hit
+def recvall(sock, n):
+    data = ''
+    while len(data) < n:
+        packet = sock.recv(n - len(data))
+        if not packet:
+            return None
+        data += packet
+    return data
 
 class PongWindow(QWidget):
 
@@ -36,10 +80,15 @@ if __name__ == '__main__':
     logInstance = Logger()
     logInstance.addLogger(loggers.StreamLogger([0]))
     setLoggerInstance(logInstance)
-    log("Setting up window...")
 
+    q = Queue()
+    p = Process(target=connect, args=(q,))
+    p.start()
+    
+    log("Setting up window...")
     app = QApplication(sys.argv)
     ex = PongWindow()
     #sys.exit(app.exec_())
     app.exec_()
+    p.join()
     log("Done!")
