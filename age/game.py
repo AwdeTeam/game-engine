@@ -2,7 +2,7 @@ import events
 import time
 
 def runGame(gameLogicManager, gameGraphicsManager):
-    gameRunning = True
+    gameRunning = True 
     centralEventManager = CentralEventManager()
     while(gameRunning):
         t0 = time.time()
