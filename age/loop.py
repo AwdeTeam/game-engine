@@ -1,7 +1,7 @@
 import events
 import time
 
-def runGame(gameLogicManager, gameGraphicsManager):
+def run(gameLogicManager, gameGraphicsManager):
     gameRunning = True 
     centralEventManager = CentralEventManager()
     while(gameRunning):
