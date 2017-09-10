@@ -25,11 +25,12 @@ def recvall(sock, n):
 def connectionAcceptor(queue, host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
-    s.listen(10)
+    s.listen(100)
 
     running = True
     while running:
         clientSocket,addr = s.accept()
+        print("Got a new client")
         queue.put(clientSocket)
         queue.put(addr)
 
@@ -48,13 +49,13 @@ class NetworkManager:
         self.clientInputQueues = []
         self.clientInputProcesses = []
         self.clientSockets = []
-        self.startConnectionAcceptor('localhost', 6789)
         self.acceptorQueue = None
         self.acceptorProces = None
         self.acceptorWaitingMode = 'socket'
         self.acceptorWaitingSocket = None
         self.engineInputQueue = engineInputQueue
         self.engineOutputQueue = engineOutputQueue
+        self.startConnectionAcceptor('localhost', 6789)
         self.route()
 
     def route(self):
@@ -66,11 +67,13 @@ class NetworkManager:
             try: data = self.acceptorQueue.get_nowait()
             except: pass
             if data:
+                print("Hey, we got something from the acceptor")
                 if self.acceptorWaitingMode == 'socket':
                     self.acceptorWaitingSocket = data
                     self.acceptorWaitingMode = 'addr'
                 else:
                     self.startClientListener(self.acceptorWaitingSocket, data)
+                    self.clientSockets.append(self.acceptorWaitingSocket)
                     self.acceptorWaitingSocket = None
                     self.acceptorWaitingMode = 'socket'
 
@@ -88,10 +91,11 @@ class NetworkManager:
                        
             # if engine output, broadcast to every socket # TODO: eventually change this obviously
             if data:
+                print("GOT ENGINE OUTPUT")
                 for s in self.clientSockets:
                     s.sendall(str(data).encode('ascii'))
         
-        time.sleep(.1) # TODO: dynamic sleeping
+        time.sleep(.5) # TODO: dynamic sleeping
     
     def startConnectionAcceptor(self, host, port):
         self.acceptorQueue = Queue()
