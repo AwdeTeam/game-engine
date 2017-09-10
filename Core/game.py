@@ -1,14 +1,14 @@
 import events
 import time
 
-MAIN_GAME_RUNNING = True
-CENTRAL_EVENT_MANAGER = CentralEventManager()
-GAME_LOGIC_MANAGER = None
-GAME_GRAPHICS_MANAGER = None
+g_mainGameRunning = True
+g_centralEventManager = CentralEventManager()
+g_gameLogicManager = None
+g_gameGraphicsManager = None
 
-while(MAIN_GAME_RUNNING):
+while(g_mainGameRunning):
     t0 = time.time()
-    CENTRAL_EVENT_MANAGER.update(GAME_LOGIC_MANAGER)
-    GAME_LOGIC_MANAGER.update(time.time() - t0)
-    GAME_GRAPHICS_MANAGER.update(time.time() - t0)
+    g_centralEventManager.update(g_gameLogicManager)
+    g_gameLogicManager.update(time.time() - t0)
+    g_gameGraphicsManager.update(time.time() - t0)
     
