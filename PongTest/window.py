@@ -50,7 +50,7 @@ def recvall(sock, n):
         packet = sock.recv(n - len(data))
         if not packet:
             return None
-        data += packet
+        data += str(packet)
     return data
 
 class PongWindow(QWidget):
