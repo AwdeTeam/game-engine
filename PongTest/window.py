@@ -1,4 +1,5 @@
 import sys
+import struct
 sys.path.append("../")
 
 from age.logger.logger import *
@@ -50,7 +51,7 @@ def recvall(sock, n):
         packet = sock.recv(n - len(data))
         if not packet:
             return None
-        data += str(packet)
+        data += packet
     return data
 
 class PongWindow(QWidget):

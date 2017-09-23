@@ -1,8 +1,13 @@
 import time
 import socket
+import struct
 from multiprocessing import Process, Queue
 
 # thanks to https://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
+def send_msg(sock, msg):
+    msg = struct.pack('>I', len(msg)) + msg
+    sock.sendall(msg)
+
 # Read message length and unpack it into an integer
 def recv_msg(sock):
     raw_msglen = recvall(sock, 4)
@@ -91,9 +96,11 @@ class NetworkManager:
                        
             # if engine output, broadcast to every socket # TODO: eventually change this obviously
             if data:
-                print("GOT ENGINE OUTPUT")
+                #print("GOT ENGINE OUTPUT")
+                print("sending " + str(data))
                 for s in self.clientSockets:
-                    s.sendall(str(data).encode('ascii'))
+                    #s.sendall(str(data).encode('ascii'))
+                    send_msg(s, data)
         
         time.sleep(.5) # TODO: dynamic sleeping
     

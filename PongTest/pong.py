@@ -31,7 +31,7 @@ class PongGameLogic:
         print("Server started")
     
     def update(self, dt):
-        print("Running game update")
+        #print("Running game update")
         self.outputQueue.put("Hi!")
         self.ballpos[0] += self.ballvel[0]*dt
         self.ballpos[1] += self.ballvel[1]*dt
