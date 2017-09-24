@@ -6,7 +6,7 @@ class Message:
         self.clientID = clientID
         self.data = data
      
-    def deflate(self)
+    def deflate(self):
         self.msgData = {"type":self.msgType, "clientID":self.client, "data":self.data
         return json.dumps(self.msgData)
 
