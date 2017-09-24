@@ -1,5 +1,3 @@
-import pdb
-
 import sys
 sys.path.append("..")
 import age
@@ -26,7 +24,6 @@ class PongGameLogic:
         self.ballvel = vel
         self.inputQueue = Queue()
         self.outputQueue = Queue()
-        #pdb.set_trace()
         startServer(self.inputQueue, self.outputQueue)
         print("Server started")
     
