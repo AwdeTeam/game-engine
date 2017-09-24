@@ -26,7 +26,7 @@ def connect(communicationQueue):
 
     running = True
     while running:
-        log("Socket listening...")
+        #log("Socket listening...")
         msg = recv_msg(s)
         log("Received a message: " + str(msg))
         if msg == "!STOP":

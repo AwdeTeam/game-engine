@@ -104,14 +104,8 @@ class NetworkManager:
                        
             # if engine output, broadcast to every socket # TODO: eventually change this obviously
             if data:
-                #print("GOT ENGINE OUTPUT")
-                print("sending " + str(data))
                 for s in self.clientSockets:
-                    #print("\tsending to client ",s)
-                    #s.sendall(str(data).encode('ascii'))
                     send_msg(s, data)
-                    #print("\t\tfinished!")
-                print("sucessfully sent data")
         
         time.sleep(.5) # TODO: dynamic sleeping
     
