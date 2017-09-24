@@ -37,7 +37,8 @@ def connect(communicationQueue):
 # thanks to https://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
 # Read message length and unpack it into an integer
 def recv_msg(sock):
-    raw_msglen = recvall(sock, 4)
+    #raw_msglen = recvall(sock, 4)
+    raw_msglen = sock.recv(4)
     if not raw_msglen:
         return None
     msglen = struct.unpack('>I', raw_msglen)[0]
@@ -51,7 +52,7 @@ def recvall(sock, n):
         packet = sock.recv(n - len(data))
         if not packet:
             return None
-        data += packet
+        data += packet.decode('ascii')
     return data
 
 class PongWindow(QWidget):
