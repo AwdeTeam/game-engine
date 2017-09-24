@@ -1,4 +1,5 @@
 import sys
+import time
 import struct
 sys.path.append("../")
 
@@ -23,14 +24,18 @@ def connect(communicationQueue):
     port = 6789
 
     s.connect((host,port))
+    s.setblocking(False)
 
     running = True
     while running:
-        #log("Socket listening...")
-        msg = recv_msg(s)
+        msg = ""
+        log("Socket listening...")
+        try: msg = recv_msg(s)
+        except: print("(nothing)")
         log("Received a message: " + str(msg))
         if msg == "!STOP":
             running = False
+        time.sleep(.1)
     log("Shutting down socket")
     s.close()
 
@@ -57,10 +62,10 @@ def recvall(sock, n):
 
 class PongWindow(QWidget):
 
-    def __init__(self):
+    def __init__(self, communicationQueue):
         super().__init__()
         self.initUI()
-        self.mouseReleaseEvent = checkClick
+        self.queue = communicationQueue
 
     def initUI(self):
         log("Initializing...")
@@ -73,10 +78,6 @@ class PongWindow(QWidget):
         qp.begin(self)
         self.drawRectangle(event, qp, 5, 5, 20, 20, [0, 150, 250])
         qp.end()
-        
-    def checkClick(self, QMouseEvent):
-        pos = QtGui.QCursor().pos()
-        #send pos to server as a click
 
     # color = [r, g, b]
     def drawRectangle(self, event, qp, x, y, width, height, color):
@@ -94,7 +95,7 @@ if __name__ == '__main__':
     
     log("Setting up window...")
     app = QApplication(sys.argv)
-    ex = PongWindow()
+    ex = PongWindow(q)
     #sys.exit(app.exec_())
     app.exec_()
     p.join()
