@@ -8,15 +8,16 @@ from age.logger import loggers
 from age.networkmanager import message
 
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtGui import QPainter, QColor, QFont
-from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPainter, QColor, QFont, QCursor
+import PyQt5.QtCore as QtCore
+from PyQt5.QtCore import Qt,pyqtSlot
 
 import socket
 
 
 from multiprocessing import Process, Queue
 
-def connect(communicationQueue):
+def connect(inputQueue, outputQueue):
     log("Setting up socket...")
     
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,15 +31,33 @@ def connect(communicationQueue):
     running = True
     while running:
         msg = ""
-        log("Socket listening...")
-        try: msg = recv_msg(s)
-        except: print("(nothing)")
-        log("Received a message: " + str(msg))
-        if msg == "!STOP":
-            running = False
+        #log("Socket listening...")
+        try: 
+            msg = recv_msg(s)
+            log("Received a message: " + str(msg))
+            if msg == "!STOP":
+                running = False
+            inputQueue.put(msg)
+        except: pass
+
+            
+        #log("Socket sending...")
+        try: 
+            data = outputQueue.get_nowait()
+            #print("SENDING: ", data)
+            send_msg(s, data)
+        except: pass
+        
         time.sleep(.1)
     log("Shutting down socket")
     s.close()
+    
+def send_msg(sock, msg):
+    try:
+        msg = struct.pack('>I', len(msg)) + msg.encode('ascii')
+        sock.sendall(msg)
+    except Exception as e:
+        traceback.print_exc()
 
 # thanks to https://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
 # Read message length and unpack it into an integer
@@ -61,32 +80,75 @@ def recvall(sock, n):
         data += packet.decode('ascii')
     return data
 
+class RenderLoop(QtCore.QThread):
+    #renderNeeded = QtCore.pyqtSignal(object)
+    #renderNeeded = QtCore.pyqtSignal(float, float)
+    renderNeeded = QtCore.pyqtSignal()
+
+    x = 50
+    y = 50
+
+    def __init__(self, queue):
+        QtCore.QThread.__init__(self)
+        self.queue = queue
+
+    def run(self):
+        while True:
+            try:
+                data = self.queue.get_nowait()
+                m = message.Message()
+                m.inflate(data)
+                self.x = m.data["ballX"]
+                self.y = m.data["ballY"]
+                try: self.renderNeeded.emit()
+                except Exception as e:
+                    traceback.print_exc()
+            except: pass
+            time.sleep(.1)
+
 class PongWindow(QWidget):
 
-    def __init__(self, communicationQueue):
+    def __init__(self, inputQueue, outputQueue):
         super().__init__()
         self.initUI()
-        self.queue = communicationQueue
-        self.mouseReleaseEvent = clickEvent
+        self.x = 50
+        self.y = 50
+        self.inputQueue = inputQueue
+        self.outputQueue = outputQueue
+        self.mouseReleaseEvent = self.clickEvent
+        
+        self.loop = RenderLoop(self.inputQueue)
+        #self.loop.renderNeeded.connect(self.positionUpdated)
+        self.loop.renderNeeded.connect(self.positionUpdated)
+        print(self.loop.renderNeeded)
+        self.loop.start()
+
+
+    #@pyqtSlot(float, float)
+    def positionUpdated(self):
+        print("POSITION UDPATED triggered")
+        self.x = self.loop.x
+        self.y = self.loop.y
+        self.repaint()
 
     def initUI(self):
         log("Initializing...")
-        self.setGeometry(300, 300, 280, 170)
+        self.setGeometry(300, 300, 480, 270)
         self.setWindowTitle("test")
         self.show()
 
     def paintEvent(self, event):
+        print("painting")
         qp = QPainter()
         qp.begin(self)
-        self.drawRectangle(event, qp, 5, 5, 20, 20, [0, 150, 250])
+        self.drawRectangle(event, qp, self.x, self.y, 20, 20, [0, 150, 250])
         qp.end()
     
     def clickEvent(self, event):
-        pos = QtGui.QCursor().cursor.pos()
-        clicked = { "dtype" : "clicked", "clickX" : pos[0], "clickY" : pos[1] }
-        data = Message("data", "CID", clicked)
-        data.deflate()
-        self.queue.put(data)
+        clicked = { "dtype" : "clicked", "clickX" : event.x(), "clickY" : event.y() }
+        data = message.Message("data", "CID", clicked)
+        #data.deflate()
+        self.outputQueue.put(data.deflate())
 
     # color = [r, g, b]
     def drawRectangle(self, event, qp, x, y, width, height, color):
@@ -98,13 +160,14 @@ if __name__ == '__main__':
     logInstance.addLogger(loggers.StreamLogger([0]))
     setLoggerInstance(logInstance)
 
-    q = Queue()
-    p = Process(target=connect, args=(q,))
+    inputQueue = Queue()
+    outputQueue = Queue()
+    p = Process(target=connect, args=(inputQueue,outputQueue))
     p.start()
     
     log("Setting up window...")
     app = QApplication(sys.argv)
-    ex = PongWindow(q)
+    ex = PongWindow(inputQueue, outputQueue)
     #sys.exit(app.exec_())
     app.exec_()
     p.join()

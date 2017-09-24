@@ -14,7 +14,7 @@ def send_msg(sock, msg):
 
 # Read message length and unpack it into an integer
 def recv_msg(sock):
-    raw_msglen = recvall(sock, 4)
+    raw_msglen = sock.recv(4)
     if not raw_msglen:
         return None
     msglen = struct.unpack('>I', raw_msglen)[0]
@@ -90,6 +90,9 @@ class NetworkManager:
                     self.acceptorWaitingSocket = None
                     self.acceptorWaitingMode = 'socket'
 
+                    # send along client id
+                    
+
             # check each client queue
             for inputQueue in self.clientInputQueues:
                 data = None
@@ -107,7 +110,7 @@ class NetworkManager:
                 for s in self.clientSockets:
                     send_msg(s, data)
         
-        time.sleep(.5) # TODO: dynamic sleeping
+        time.sleep(.1) # TODO: dynamic sleeping
     
     def startConnectionAcceptor(self, host, port):
         self.acceptorQueue = Queue()

@@ -33,18 +33,21 @@ class PongGameLogic:
     def update(self, dt):
         #print("Running game update")
         self.outputQueue.put("Hi!")
-        self.ballpos[0] += self.ballvel[0]*dt
-        self.ballpos[1] += self.ballvel[1]*dt
+        #self.ballpos[0] += self.ballvel[0]*dt
+        #self.ballpos[1] += self.ballvel[1]*dt
+        self.ballpos[0] += self.ballvel[0]*.1
+        self.ballpos[1] += self.ballvel[1]*.1
         
         state = { "dtype" : "gameState", "ballX" : self.ballpos[0], "ballY" : self.ballpos[1], "size" : self.ballsiz }
-        stateMsg = Message("data", "CID", state)
-        stateMsg.deflate()
-        self.outputQueue.put(stateMsg)
+        stateMsg = message.Message("data", "CID", state)
+        #stateMsg.deflate()
+        self.outputQueue.put(stateMsg.deflate())
         
         try:
-            outData = self.engineOutputQueue.get_nowait()
-            data = Message()
-            data.inflate(outData)
+            inData = self.inputQueue.get_nowait()
+            print("SERVER GOT DATA!!!!")
+            data = message.Message()
+            data.inflate(inData)
             if(data["type"] == "data"):
                 if(data["data"]["dtype"] == "clicked"):
                     self.checkClick(int(data["data"]["clickX"]), int(data["data"]["clickY"]))

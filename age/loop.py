@@ -8,7 +8,9 @@ def run(gameLogicManager, gameGraphicsManager):
     while(gameRunning):
         t0 = time.time()
         centralEventManager.update(gameLogicManager)
-        gameLogicManager.update(time.time() - t0)
+        dt = time.time() - t0
+        #dt *= 100000
+        gameLogicManager.update(dt)
         #gameGraphicsManager.update(time.time() - t0)
-        time.sleep(1) # TODO: dynamic sleeping
+        time.sleep(.01) # TODO: dynamic sleeping
 
