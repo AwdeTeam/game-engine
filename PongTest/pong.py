@@ -45,11 +45,12 @@ class PongGameLogic:
         
         try:
             inData = self.inputQueue.get_nowait()
-            print("SERVER GOT DATA!!!!")
+            #print("SERVER GOT DATA!!!!")
             data = message.Message()
             data.inflate(inData)
-            if(data["type"] == "data"):
-                if(data["data"]["dtype"] == "clicked"):
+            if(data.type == "data"):
+                print("Incoming data: {}\nBall Position: ({},{})".format(data.data,self.ballpos[0],self.ballpos[1]))
+                if(data.data["dtype"] == "clicked"):
                     self.checkClick(int(data["data"]["clickX"]), int(data["data"]["clickY"]))
         except:
             pass
