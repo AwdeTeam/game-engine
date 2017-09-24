@@ -5,6 +5,7 @@ sys.path.append("../")
 
 from age.logger.logger import *
 from age.logger import loggers
+from age.networkmanager import message
 
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtGui import QPainter, QColor, QFont
@@ -66,6 +67,7 @@ class PongWindow(QWidget):
         super().__init__()
         self.initUI()
         self.queue = communicationQueue
+        self.mouseReleaseEvent = clickEvent
 
     def initUI(self):
         log("Initializing...")
@@ -78,6 +80,13 @@ class PongWindow(QWidget):
         qp.begin(self)
         self.drawRectangle(event, qp, 5, 5, 20, 20, [0, 150, 250])
         qp.end()
+    
+    def clickEvent(self, event):
+        pos = QtGui.QCursor().cursor.pos()
+        clicked = { "dtype" : "clicked", "clickX" : pos[0], "clickY" : pos[1] }
+        data = Message("data", "CID", clicked)
+        data.deflate()
+        self.queue.put(data)
 
     # color = [r, g, b]
     def drawRectangle(self, event, qp, x, y, width, height, color):
