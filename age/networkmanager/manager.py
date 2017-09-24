@@ -7,11 +7,8 @@ import traceback
 # thanks to https://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
 def send_msg(sock, msg):
     try:
-        print("[Preparing to pack]")
         msg = struct.pack('>I', len(msg)) + msg.encode('ascii')
-        print("[Sending: ",msg,"]")
         sock.sendall(msg)
-        print("[sent!]")
     except Exception as e:
         traceback.print_exc()
 
@@ -31,7 +28,7 @@ def recvall(sock, n):
         packet = sock.recv(n - len(data))
         if not packet:
             return None
-        data += packet
+        data += packet.decode('ascii')
     return data
 
 def connectionAcceptor(queue, host, port):
@@ -42,7 +39,7 @@ def connectionAcceptor(queue, host, port):
     running = True
     while running:
         clientSocket,addr = s.accept()
-        print("Got a new client")
+        print("New client connecting...")
         queue.put(clientSocket)
         queue.put(addr)
 
@@ -84,7 +81,6 @@ class NetworkManager:
             try: data = self.acceptorQueue.get_nowait()
             except: pass
             if data:
-                print("Hey, we got something from the acceptor")
                 if self.acceptorWaitingMode == 'socket':
                     self.acceptorWaitingSocket = data
                     self.acceptorWaitingMode = 'addr'
@@ -111,10 +107,10 @@ class NetworkManager:
                 #print("GOT ENGINE OUTPUT")
                 print("sending " + str(data))
                 for s in self.clientSockets:
-                    print("\tsending to client ",s)
+                    #print("\tsending to client ",s)
                     #s.sendall(str(data).encode('ascii'))
                     send_msg(s, data)
-                    print("\t\tfinished!")
+                    #print("\t\tfinished!")
                 print("sucessfully sent data")
         
         time.sleep(.5) # TODO: dynamic sleeping
@@ -125,6 +121,7 @@ class NetworkManager:
         self.acceptorProcess.start()
         
     def startClientListener(self, socket, addr):
+        print("Listening to client from ", addr)
         q = Queue()
         self.clientInputQueues.append(q)
         p = Process(target=clientListener, args=(q, socket, addr))

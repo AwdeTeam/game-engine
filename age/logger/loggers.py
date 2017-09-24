@@ -13,8 +13,8 @@ class StreamLogger:
 
     def log(self, msg, channel):
         if channel in self.channels:
-            #print(msg)
-            self.outstream.write(str(msg) + "\n")
+            print(msg)
+            #self.outstream.write(str(msg) + "\n")
 
     def rescue(self): pass # not really needed
         
