@@ -60,6 +60,7 @@ class PongWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.initUI()
+        self.mouseReleaseEvent = checkClick
 
     def initUI(self):
         log("Initializing...")
@@ -72,6 +73,10 @@ class PongWindow(QWidget):
         qp.begin(self)
         self.drawRectangle(event, qp, 5, 5, 20, 20, [0, 150, 250])
         qp.end()
+        
+    def checkClick(self, QMouseEvent):
+        pos = QtGui.QCursor().pos()
+        #send pos to server as a click
 
     # color = [r, g, b]
     def drawRectangle(self, event, qp, x, y, width, height, color):
