@@ -41,6 +41,7 @@ class PongGameLogic:
         state = { "dtype" : "gameState", "ballX" : self.ballpos[0], "ballY" : self.ballpos[1], "size" : self.ballsiz }
         stateMsg = message.Message("data", "CID", state)
         #stateMsg.deflate()
+        print("POS SENT: {}, {}".format(self.ballpos[0], self.ballpos[1]))
         self.outputQueue.put(stateMsg.deflate())
         
         try:
@@ -49,8 +50,9 @@ class PongGameLogic:
             data = message.Message()
             data.inflate(inData)
             if(data.type == "data"):
-                print("Incoming data: {}\nBall Position: ({},{})".format(data.data,self.ballpos[0],self.ballpos[1]))
+                print("Incoming data: {}\t\tBall Position: ({},{})".format(data.data,self.ballpos[0],self.ballpos[1]))
                 if(data.data["dtype"] == "clicked"):
+                    print("Clicked on Ball!")
                     self.checkClick(int(data["data"]["clickX"]), int(data["data"]["clickY"]))
         except:
             pass

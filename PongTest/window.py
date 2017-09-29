@@ -100,11 +100,12 @@ class RenderLoop(QtCore.QThread):
                 m.inflate(data)
                 self.x = m.data["ballX"]
                 self.y = m.data["ballY"]
+                print("POS RECIEVED: {}, {}".format(self.x, self.y))
                 try: self.renderNeeded.emit()
                 except Exception as e:
                     traceback.print_exc()
             except: pass
-            time.sleep(.1)
+            time.sleep(.001)
 
 class PongWindow(QWidget):
 
@@ -126,7 +127,7 @@ class PongWindow(QWidget):
 
     #@pyqtSlot(float, float)
     def positionUpdated(self):
-        print("POSITION UDPATED triggered")
+        #print("POSITION")
         self.x = self.loop.x
         self.y = self.loop.y
         self.repaint()
@@ -138,7 +139,7 @@ class PongWindow(QWidget):
         self.show()
 
     def paintEvent(self, event):
-        print("painting")
+        #print("painting")
         qp = QPainter()
         qp.begin(self)
         self.drawRectangle(event, qp, self.x, self.y, 20, 20, [0, 150, 250])
@@ -146,6 +147,7 @@ class PongWindow(QWidget):
     
     def clickEvent(self, event):
         clicked = { "dtype" : "clicked", "clickX" : event.x(), "clickY" : event.y() }
+        print("ball: ({}, {}) vs click: ({}, {})".format(self.x, self.y, event.x(), event.y()))
         data = message.Message("data", "CID", clicked)
         #data.deflate()
         self.outputQueue.put(data.deflate())
