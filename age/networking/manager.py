@@ -1,35 +1,9 @@
 import time
 import socket
-import struct
 from multiprocessing import Process, Queue
 import traceback
 
-# thanks to https://stackoverflow.com/questions/17667903/python-socket-receive-large-amount-of-data 
-def send_msg(sock, msg):
-    try:
-        msg = struct.pack('>I', len(msg)) + msg.encode('ascii')
-        sock.sendall(msg)
-    except Exception as e:
-        traceback.print_exc()
-
-# Read message length and unpack it into an integer
-def recv_msg(sock):
-    raw_msglen = sock.recv(4)
-    if not raw_msglen:
-        return None
-    msglen = struct.unpack('>I', raw_msglen)[0]
-    # Read the message data
-    return recvall(sock, msglen)
-
-# Helper function to recv n bytes or return None if EOF is hit
-def recvall(sock, n):
-    data = ''
-    while len(data) < n:
-        packet = sock.recv(n - len(data))
-        if not packet:
-            return None
-        data += packet.decode('ascii')
-    return data
+import util
 
 def connectionAcceptor(queue, host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -46,11 +20,11 @@ def connectionAcceptor(queue, host, port):
 def clientListener(queue, socket, addr):
     running = True
     while running:
-        data = recv_msg(socket)
+        data = util.recv_msg(socket)
         queue.put(data)
 
 # can be started as a process target
-def startNetworkManager(inputQueue, outputQueue):
+def networkManagerEntryPoint(inputQueue, outputQueue):
     manager = NetworkManager(inputQueue, outputQueue)
     
 class NetworkManager:
@@ -108,7 +82,7 @@ class NetworkManager:
             # if engine output, broadcast to every socket # TODO: eventually change this obviously
             if data:
                 for s in self.clientSockets:
-                    send_msg(s, data)
+                    util.send_msg(s, data)
         
         time.sleep(.1) # TODO: dynamic sleeping
     
