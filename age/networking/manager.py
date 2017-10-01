@@ -4,9 +4,39 @@ from multiprocessing import Process, Queue
 import traceback
 
 from message import Message
-
 import util
 
+
+def clientSideConnectionEntryPoint(inputQueue, outputQueue):
+    pass
+
+class ClientSideConnection:
+    def __init__(self, inputQueue, outputQueue):
+        self.inputQueue = inputQueue
+        self.outputQueue = outputQueue
+
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        # TODO: rest of connection stuff
+        
+        self.route()
+
+    def route(self):
+        running = True
+        while running:
+            try:
+                msg = util.recv_msg(s)
+                self.inputQueue.put(msg)
+            except:
+                pass
+        
+
+
+# can be started as a process target
+def networkManagerEntryPoint(inputQueue, outputQueue):
+    manager = NetworkManager(inputQueue, outputQueue)
+    
+# PROCESS
 def connectionAcceptor(queue, host, port):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.bind((host, port))
@@ -19,16 +49,13 @@ def connectionAcceptor(queue, host, port):
         queue.put(clientSocket)
         queue.put(addr)
 
+# PROCESS
 def clientListener(queue, socket, addr):
     running = True
     while running:
         data = util.recv_msg(socket)
         queue.put(data)
 
-# can be started as a process target
-def networkManagerEntryPoint(inputQueue, outputQueue):
-    manager = NetworkManager(inputQueue, outputQueue)
-    
 class NetworkManager:
     def __init__(self, engineInputQueue, engineOutputQueue):
         self.clientInputQueues = []
