@@ -12,5 +12,5 @@ def run(gameLogicManager, gameGraphicsManager):
         #dt *= 100000
         gameLogicManager.update(dt)
         #gameGraphicsManager.update(time.time() - t0)
-        time.sleep(.01) # TODO: dynamic sleeping
+        time.sleep(.3) # TODO: dynamic sleeping
 
