@@ -15,3 +15,8 @@ class Message:
         self.type = self.msgData["type"]
         self.clientID = self.msgData["clientID"]
         self.data = self.msgData["data"]
+    
+    @classmethod
+    def generate(cls, cid, type="state diff", **kwargs):
+        message = cls(type, cid, str(kwargs))
+        return message.deflate()
