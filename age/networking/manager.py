@@ -65,12 +65,16 @@ class NetworkManager:
         self.nextClientID = 0
         
         self.acceptorQueue = None
-        self.acceptorProces = None
+        self.acceptorProcess = None
         self.acceptorWaitingMode = 'socket'
         self.acceptorWaitingSocket = None
         self.engineInputQueue = engineInputQueue
         self.engineOutputQueue = engineOutputQueue
         self.startConnectionAcceptor('localhost', 6789)
+        self.buffer = []
+        self.bufferOffset = 0
+        self.clientCongestionWindows = [] #cid:(start, stop)
+        self.congestionSize = 5
         self.route()
 
     def __del__(self):
@@ -96,6 +100,7 @@ class NetworkManager:
                     self.startClientListener(self.acceptorWaitingSocket, data)
                     #self.clientSockets.append(self.acceptorWaitingSocket)
                     self.clientSockets[self.nextClientID] = self.acceptorWaitingSocket
+                    self.clientCongestionWindows[self.nextClientID] = (0, self.congestionSize)
                     self.nextClientID += 1
                     self.acceptorWaitingSocket = None
                     self.acceptorWaitingMode = 'socket'
@@ -119,9 +124,16 @@ class NetworkManager:
             data = None
             try: data = self.engineOutputQueue.get_nowait()
             except: pass
-                       
-            # if engine output, send that message to signified client
+            
             if data:
+                self.buffer.append(data)
+                #TODO This isn't done yet...
+            
+            # if engine output, send that message to signified client
+            if len(self.buffer) > 0:
+                for clientID in self.clientSockets:
+                    window = self.clientCongestionWindows[clientID]
+                    
                 #message
                 msg = Message.inflate(data)
                 
