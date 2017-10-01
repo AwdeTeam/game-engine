@@ -10,11 +10,15 @@ class Message:
         self.msgData = { "type":self.type, "clientID":self.clientID, "data":self.data }
         return json.dumps(self.msgData)
 
+    @classmethod
     def inflate(self, msg):
-        self.msgData = json.loads(msg)
-        self.type = self.msgData["type"]
-        self.clientID = self.msgData["clientID"]
-        self.data = self.msgData["data"]
+        msgData = json.loads(msg)
+        type = self.msgData["type"]
+        clientID = self.msgData["clientID"]
+        data = self.msgData["data"]
+        
+        message = cls(type, clientID, data)
+        return message
     
     @classmethod
     def generate(cls, cid, type="state diff", **kwargs):

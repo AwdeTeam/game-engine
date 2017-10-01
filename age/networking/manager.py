@@ -3,6 +3,8 @@ import socket
 from multiprocessing import Process, Queue
 import traceback
 
+from message import Message
+
 import util
 
 def connectionAcceptor(queue, host, port):
@@ -31,7 +33,10 @@ class NetworkManager:
     def __init__(self, engineInputQueue, engineOutputQueue):
         self.clientInputQueues = []
         self.clientInputProcesses = []
-        self.clientSockets = []
+        
+        self.clientSockets = {}
+        self.nextClientID = 0
+        
         self.acceptorQueue = None
         self.acceptorProces = None
         self.acceptorWaitingMode = 'socket'
@@ -43,7 +48,9 @@ class NetworkManager:
 
     def __del__(self):
         try:
-            for s in self.clientSockets: s.close()
+            for clientID in self.clientSockets:
+                sock = self.clientSockets[clientID]
+                sock.close()
         except: pass
 
     def route(self):
@@ -60,7 +67,9 @@ class NetworkManager:
                     self.acceptorWaitingMode = 'addr'
                 else:
                     self.startClientListener(self.acceptorWaitingSocket, data)
-                    self.clientSockets.append(self.acceptorWaitingSocket)
+                    #self.clientSockets.append(self.acceptorWaitingSocket)
+                    self.clientSockets[self.nextClientID] = self.acceptorWaitingSocket
+                    self.nextClientID += 1
                     self.acceptorWaitingSocket = None
                     self.acceptorWaitingMode = 'socket'
 
@@ -74,15 +83,28 @@ class NetworkManager:
                 except: pass
                 if data: self.engineInputQueue.put(data)
 
+
+            # TODO TODO: put handling of engine output inside try except INSIDE OF A LOOP
+            # (keeps processing messages until queue is empty) and limit by
+            # dynamic sleeping
+
             # check engine output
             data = None
             try: data = self.engineOutputQueue.get_nowait()
             except: pass
                        
-            # if engine output, broadcast to every socket # TODO: eventually change this obviously
+            # if engine output, send that message to signified client
             if data:
-                for s in self.clientSockets:
-                    util.send_msg(s, data)
+                #message
+                msg = Message.inflate(data)
+                
+                if msg.clientID == -1: # signifying broadcast
+                    for clientID in self.clientSockets:
+                        sock = self.clientSockets[clientID]
+                        util.send_msg(sock, data)
+                else:
+                    sock = self.clientSockets[msg.clientID]
+                    util.send_msg(sock, data)
         
         time.sleep(.1) # TODO: dynamic sleeping
     
