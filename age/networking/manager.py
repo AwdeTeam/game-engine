@@ -7,17 +7,18 @@ from message import Message
 import util
 
 
-def clientSideConnectionEntryPoint(inputQueue, outputQueue):
-    pass
+def clientSideConnectionEntryPoint(inputQueue, outputQueue, ip, port):
+    connection = ClientSideConnection(inputQueue, outputQueue, ip, port)
 
 class ClientSideConnection:
-    def __init__(self, inputQueue, outputQueue):
+    def __init__(self, inputQueue, outputQueue, ip, port):
         self.inputQueue = inputQueue
         self.outputQueue = outputQueue
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-        # TODO: rest of connection stuff
+        self.socket.connect((ip, port))
+        self.socket.setblocking(False)
         
         self.route()
 
@@ -29,12 +30,11 @@ class ClientSideConnection:
                 self.inputQueue.put(msg)
             except:
                 pass
-        
 
 
 # can be started as a process target
-def networkManagerEntryPoint(inputQueue, outputQueue):
-    manager = NetworkManager(inputQueue, outputQueue)
+def networkManagerEntryPoint(inputQueue, outputQueue, ip, port):
+    manager = NetworkManager(inputQueue, outputQueue, ip, port)
     
 # PROCESS
 def connectionAcceptor(queue, host, port):
@@ -57,7 +57,7 @@ def clientListener(queue, socket, addr):
         queue.put(data)
 
 class NetworkManager:
-    def __init__(self, engineInputQueue, engineOutputQueue):
+    def __init__(self, engineInputQueue, engineOutputQueue, ip, port):
         self.clientInputQueues = []
         self.clientInputProcesses = []
         
@@ -70,7 +70,7 @@ class NetworkManager:
         self.acceptorWaitingSocket = None
         self.engineInputQueue = engineInputQueue
         self.engineOutputQueue = engineOutputQueue
-        self.startConnectionAcceptor('localhost', 6789)
+        self.startConnectionAcceptor(ip, port)
         self.buffer = []
         self.bufferOffset = 0
         self.clientCongestionWindows = [] #cid:(start, stop)

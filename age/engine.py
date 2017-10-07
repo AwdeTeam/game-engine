@@ -8,30 +8,26 @@ class Engine:
     def __init__(self):
         self.netInQueue = None
         self.netOutQueue = None
-        pass
-
 
     # TODO: pass in port/other info stuffs
-    def startServerNetworking(self):
+    def startServerNetworking(self, ip, port):
         print("Starting network I/O...")
         self.netInQueue = Queue()
         self.netOutQueue = Queue()
 
         # TODO: process needs to be saved so can be closed?
-        p = Process(target=manager.networkManagerEntryPoint, args=(self.netInQueue, self.netOutQueue))
+        p = Process(target=manager.networkManagerEntryPoint, args=(self.netInQueue, self.netOutQueue, ip, port))
         p.start()
         print("Network I/O running")
 
     def startServerGameLoop(self):
         print("Starting server game loop...")
-        pass
-
-    def startServer(self):
-        print("Starting server...")
-        self.startServerNetworking()
-
         # TODO: start game loop
 
+    def startServer(self, ip, port):
+        print("Starting server...")
+        self.startServerNetworking(ip, port)
+        self.startServerGameLoop()
 
     # TODO: allow to specify allotted time (elsewhere, in an engine
     # variable/constraint to process network messages (for
@@ -55,5 +51,11 @@ class Engine:
     
     
     # TODO: ip/port other stuffs
-    def connectToServer(self):
-        pass
+    def connectToServer(self, ip, port):
+        print("Connecting to server...")
+        self.netInQueue = Queue()
+        self.netOutQueue = Queue()
+
+        p = Process(target=manager.clientSideConnectionEntryPoint, args=(self.netInQueue, self.netOutQueue, ip, port))
+        p.start()
+        
