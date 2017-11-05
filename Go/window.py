@@ -7,7 +7,7 @@ from age.logger.logger import *
 from age.logger import loggers
 
 from PyQt5.QtWidgets import QWidget, QApplication
-from PyQt5.QtGui import QPainter, QColor, QFont, QCursor
+from PyQt5.QtGui import QPainter, QColor, QFont, QCursor, QPen, QBrush
 import PyQt5.QtCore as QtCore
 from PyQt5.QtCore import Qt,pyqtSlot
 
@@ -59,6 +59,9 @@ class Renderer:
         self.offsetX = 10
         self.offsetY = 10
 
+        self.boardColor = QColor(40, 100, 150)
+
+
     def getWidgetSize(self):
         return self.widget.rect().width(), self.widget.rect().height()
 
@@ -68,15 +71,20 @@ class Renderer:
         self.gsHeight = height / self.ySquares
         self.gsWidth = width / self.xSquares
 
+    def fillSquare(self, qp, xSquare, ySquare):
+        x0 = xSquare*self.gsWidth + self.offsetX
+        y0 = ySquare*self.gsHeight + self.offsetY
+        
+        qp.fillRect(x0, y0, self.gsWidth, self.gsHeight, self.boardColor)
+
     def render(self):
         qp = QPainter()
         qp.begin(self.widget)
 
         #width, height = self.getWidgetSize()
 
-
-        #gsHeight = height / self.ySquares
-        #gsWidth = width / self.xSquares
+        pen = QPen(self.boardColor)
+        qp.setPen(pen)
 
         for i in range(0, self.ySquares + 1): # + 1 to draw ending line
             qp.drawLine(self.offsetX, i*self.gsHeight + self.offsetY, self.xSquares*self.gsWidth + self.offsetX, i*self.gsHeight + self.offsetY)
@@ -84,8 +92,12 @@ class Renderer:
         for i in range(0, self.xSquares + 1):
             qp.drawLine(i*self.gsWidth + self.offsetX, self.offsetY, i*self.gsWidth + self.offsetY, self.ySquares*self.gsHeight + self.offsetY)
 
-        qp.end()
+        for y in range(0, self.ySquares):
+            for x in range(0, self.xSquares):
+                if (x + y) % 2 == 1:
+                    self.fillSquare(qp, x, y)
 
+        qp.end()
     
 
 class PongWindow(QWidget):
