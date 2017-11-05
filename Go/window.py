@@ -173,7 +173,12 @@ class GoWindow(QWidget):
                     self.selectedPieceX = board_x
                     self.selectedPieceY = board_y
             else:
-                self.board.move(self.selectedPieceX, self.selectedPieceY, board_x, board_y)
+                print("Attempting move...")
+                thing = self.board.move(self.selectedPieceX, self.selectedPieceY, board_x, board_y)
+                print(thing)
+                self.pieceSelected = False
+                self.selectedPieceX = -1
+                self.selectedPieceY = -1
                 
             self.repaint()
         else:

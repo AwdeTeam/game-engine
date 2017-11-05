@@ -46,19 +46,19 @@ class Gameboard(Grid):
             return moves
         if(x < 7 and y < 7 and
            self.getToken(x+1, y+1) == "empty" and
-           (token == "white" or king)):
+           (token == "black" or king)):
             moves.append((x+1,y+1))     
         if(x > 0 and y < 7 and
            self.getToken(x-1, y+1) == "empty" and
-           (token == "white" or king)):
+           (token == "black" or king)):
             moves.append((x-1,y+1))
         if(x < 7 and y > 0 and
            self.getToken(x+1, y-1) == "empty" and
-           (token == "black" or king)):
+           (token == "white" or king)):
             moves.append((x+1,y-1))
         if(x > 0 and y > 0 and
            self.getToken(x-1, y-1) == "empty" and
-           (token == "black" or king)):
+           (token == "white" or king)):
             moves.append((x-1,y-1))
 
         return moves
@@ -67,7 +67,7 @@ class Gameboard(Grid):
         if(not (x1,y1) in self.validMoves(x0,y0)):
             return [], False
         
-        token = self.getToken(x, y)
+        token = self.getToken(x0, y0)
         
         jumps = self.jumps(x1, y1, token)
         self.setToken(x0,y0, "empty")
@@ -81,7 +81,7 @@ class Gameboard(Grid):
         
         return jumps, True
 
-    def jumps(x, y, token):
+    def jumps(self, x, y, token):
         king = "K" in token
         token = token.split()[0]
         jumps = []
