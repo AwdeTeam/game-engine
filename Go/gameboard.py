@@ -4,7 +4,8 @@ class Grid():
         for key, val in initial:
             default[key] = val
         row = [ default ] * width
-        self.grid = row * height
+        self.grid = [row] * height
+        print(self.grid)
 
     def save(url):
         print("This doesn't do anything yet!")

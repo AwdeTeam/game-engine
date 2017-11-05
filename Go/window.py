@@ -13,9 +13,11 @@ from PyQt5.QtCore import Qt,pyqtSlot
 
 from multiprocessing import Process, Queue
 
+import gameboard as gb
+
 
 class Renderer:
-    
+
     def __init__(self, widget):
         self.widget = widget
 
@@ -31,6 +33,15 @@ class Renderer:
         self.lineColor = QColor(40, 100, 150)
         self.boardColor = QColor(40, 100, 150)
 
+        self.darkPiece = QColor(20, 20, 20)
+        self.lightPiece = QColor(200, 200, 200)
+
+        self.darkBrush = QBrush(self.darkPiece)
+        self.lightBrush = QBrush(self.lightPiece)
+
+        self.pieceWidth = 40
+        self.pieceHeight = 40
+
 
     def getWidgetSize(self):
         return self.widget.rect().width(), self.widget.rect().height()
@@ -44,10 +55,31 @@ class Renderer:
     def fillSquare(self, qp, xSquare, ySquare):
         x0 = xSquare*self.gsWidth + self.offsetX + 1
         y0 = ySquare*self.gsHeight + self.offsetY + 1
-        
+
         qp.fillRect(x0, y0, self.gsWidth - 1, self.gsHeight - 1, self.boardColor)
 
-    def render(self):
+    # side = "white" "black"
+    def drawPiece(self, qp, xSquare, ySquare, side, king):
+        pieceOffX = (self.gsWidth - self.pieceWidth) / 2
+        pieceOffY = (self.gsHeight - self.pieceHeight) / 2
+
+        x0 = xSquare*self.gsWidth + self.offsetX + pieceOffX
+        y0 = ySquare*self.gsHeight + self.offsetY + pieceOffY
+
+        if side == "black": qp.setBrush(self.darkBrush)
+        else: qp.setBrush(self.lightBrush)
+
+        qp.drawEllipse(x0, y0, self.pieceWidth, self.pieceHeight)
+
+
+    def drawBoard(self, qp, gameboard):
+        for x in range(7):
+            for y in range(7):
+                token = gameboard.getToken(x, y)
+            if("empty" not in token):
+                self.drawPiece(qp, x, y, token.split()[0], "K" in token)
+
+    def render(self, gameboard):
         qp = QPainter()
         qp.begin(self.widget)
 
@@ -55,7 +87,7 @@ class Renderer:
 
         pen = QPen(self.lineColor)
         qp.setPen(pen)
-        
+
         for y in range(0, self.ySquares):
             for x in range(0, self.xSquares):
                 if (x + y) % 2 == 1:
@@ -67,11 +99,12 @@ class Renderer:
         for i in range(0, self.xSquares + 1):
             qp.drawLine(i*self.gsWidth + self.offsetX, self.offsetY, i*self.gsWidth + self.offsetX, self.ySquares*self.gsHeight + self.offsetY)
 
+        self.drawBoard(qp, gameboard)
 
         qp.end()
-    
 
-class PongWindow(QWidget):
+
+class GoWindow(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -81,12 +114,14 @@ class PongWindow(QWidget):
         self.mouseReleaseEvent = self.mouseReleaseEvent
         self.mousePressEvent = self.mousePressEvent
         self.mouseMoveEvent = self.mouseMoveEvent
-        
+
         self.renderer = Renderer(self)
 
         self.dragging = False
         self.xOff = 0
         self.yOff = 0
+
+        self.board = gb.Gameboard()
 
 
     #@pyqtSlot(float, float)
@@ -103,21 +138,21 @@ class PongWindow(QWidget):
         self.show()
 
     def paintEvent(self, event):
-        self.renderer.render()
-    
+        self.renderer.render(self.board)
+
     def mouseMoveEvent(self, event):
         if self.dragging:
             self.renderer.offsetX = event.x() - self.xOff
             self.renderer.offsetY = event.y() - self.yOff
             self.repaint()
-            
+
 
     def mousePressEvent(self, event):
         self.dragging = True
         self.xOff = event.x() - self.renderer.offsetX
         self.yOff = event.y() - self.renderer.offsetY
-            
-    
+
+
     def mouseReleaseEvent(self, event):
         self.dragging = False
         #clicked = { "dtype" : "clicked", "clickX" : event.x(), "clickY" : event.y() }
@@ -136,9 +171,10 @@ if __name__ == '__main__':
     logInstance = Logger()
     logInstance.addLogger(loggers.StreamLogger([0]))
     setLoggerInstance(logInstance)
-    
+
     log("Setting up window...")
     app = QApplication(sys.argv)
-    ex = PongWindow()
+    ex = GoWindow()
     app.exec_()
     log("Done!")
+
