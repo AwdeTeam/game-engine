@@ -36,8 +36,11 @@ class Renderer:
         self.darkPiece = QColor(20, 20, 20)
         self.lightPiece = QColor(200, 200, 200)
 
+        self.selection = QColor(255, 0, 0)
+
         self.darkBrush = QBrush(self.darkPiece)
         self.lightBrush = QBrush(self.lightPiece)
+        self.selectedBrush = QBrush(self.selection)
 
         self.pieceWidth = 40
         self.pieceHeight = 40
@@ -67,19 +70,21 @@ class Renderer:
         y0 = ySquare*self.gsHeight + self.offsetY + pieceOffY
 
         if side == "black": qp.setBrush(self.darkBrush)
-        else: qp.setBrush(self.lightBrush)
+        elif side == "white": qp.setBrush(self.lightBrush)
+        else: qp.setBrush(self.selectedBrush)
 
         qp.drawEllipse(x0, y0, self.pieceWidth, self.pieceHeight)
 
 
-    def drawBoard(self, qp, gameboard):
+    def drawBoard(self, qp, gameboard, selectedX, selectedY):
         for x in range(8):
             for y in range(8):
                 token = gameboard.getToken(x, y)
                 if("empty" not in token):
-                    self.drawPiece(qp, x, y, token.split()[0], "K" in token)
+                    if selectedX == x and selectedY == y: self.drawPiece(qp, x, y, "select", "K" in token)
+                    else: self.drawPiece(qp, x, y, token.split()[0], "K" in token)
 
-    def render(self, gameboard):
+    def render(self, gameboard, selectedX, selectedY):
         qp = QPainter()
         qp.begin(self.widget)
 
@@ -99,7 +104,7 @@ class Renderer:
         for i in range(0, self.xSquares + 1):
             qp.drawLine(i*self.gsWidth + self.offsetX, self.offsetY, i*self.gsWidth + self.offsetX, self.ySquares*self.gsHeight + self.offsetY)
 
-        self.drawBoard(qp, gameboard)
+        self.drawBoard(qp, gameboard, selectedX, selectedY)
 
         qp.end()
 
@@ -121,6 +126,13 @@ class GoWindow(QWidget):
         self.xOff = 0
         self.yOff = 0
 
+        self.pieceSelected = False
+        self.selectedPieceX = -1
+        self.selectedPieceY = -1
+
+        self.targetX = 0
+        self.targetY = 0
+
         self.board = gb.Gameboard()
 
 
@@ -138,7 +150,7 @@ class GoWindow(QWidget):
         self.show()
 
     def paintEvent(self, event):
-        self.renderer.render(self.board)
+        self.renderer.render(self.board, self.selectedPieceX, self.selectedPieceY)
 
     def mouseMoveEvent(self, event):
         if self.dragging:
@@ -147,10 +159,27 @@ class GoWindow(QWidget):
             self.repaint()
 
 
+
     def mousePressEvent(self, event):
-        self.dragging = True
-        self.xOff = event.x() - self.renderer.offsetX
-        self.yOff = event.y() - self.renderer.offsetY
+        # check if clicking on the board or not
+        if event.x() > self.renderer.offsetX and event.x() < (self.renderer.offsetX + self.renderer.gsWidth * self.renderer.xSquares) and event.y() > self.renderer.offsetY and event.y() < (self.renderer.offsetY + self.renderer.gsHeight * self.renderer.ySquares):
+                
+            board_x = int((event.x() - self.renderer.offsetX)/(self.renderer.gsWidth))
+            board_y = int((event.y() - self.renderer.offsetY)/(self.renderer.gsHeight))
+
+            if not self.pieceSelected:
+                if(self.board.getToken(board_x, board_y != "empty")):
+                    self.pieceSelected = True
+                    self.selectedPieceX = board_x
+                    self.selectedPieceY = board_y
+            else:
+                self.board.move(self.selectedPieceX, self.selectedPieceY, board_x, board_y)
+                
+            self.repaint()
+        else:
+            self.dragging = True
+            self.xOff = event.x() - self.renderer.offsetX
+            self.yOff = event.y() - self.renderer.offsetY
 
 
     def mouseReleaseEvent(self, event):
