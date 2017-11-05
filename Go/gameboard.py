@@ -1,11 +1,15 @@
 class Grid():
     def __init__(self, width=0, height=0, initial=[]):
-        default = {}
-        for key, val in initial:
-            default[key] = val
-        row = [ default ] * width
-        self.grid = [row] * height
-        print(self.grid)
+        self.grid = []
+        for y in range(height):
+            row = []
+            for x in range(width):
+                default = {}
+                for key, val in initial:
+                    default[key] = val
+                row.append(default)
+            self.grid.append(row)
+            
 
     def save(url):
         print("This doesn't do anything yet!")
@@ -16,17 +20,18 @@ class Grid():
 class Gameboard(Grid):
     def __init__(self):
         Grid.__init__(self, 8, 8, [("token","empty")])
-        for i in range(7):
-            for j in range(7):
-                if(j < 2):
-                    if((i+j)%2 == 1):
-                        self.setToken(i, j, "black")
-                if(j > 5):
-                    if((i+j)%2 == 1):
-                        self.setToken(i, j, "white")
+        for x in range(8):
+            for y in range(8):
+                if(y < 2):
+                    if((x+y)%2 == 1):
+                        self.setToken(x, y, "black")
+                if(y > 5):
+                    if((x+y)%2 == 1):
+                        self.setToken(x, y, "white")
 
     def setToken(self, x, y, color):
         self.grid[x][y]["token"] = color
+        #self.grid[1][1]["token"] = color
 
     def getToken(self, x, y):
         return self.grid[x][y]["token"]

@@ -73,11 +73,11 @@ class Renderer:
 
 
     def drawBoard(self, qp, gameboard):
-        for x in range(7):
-            for y in range(7):
+        for x in range(8):
+            for y in range(8):
                 token = gameboard.getToken(x, y)
-            if("empty" not in token):
-                self.drawPiece(qp, x, y, token.split()[0], "K" in token)
+                if("empty" not in token):
+                    self.drawPiece(qp, x, y, token.split()[0], "K" in token)
 
     def render(self, gameboard):
         qp = QPainter()
