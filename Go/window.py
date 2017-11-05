@@ -62,6 +62,7 @@ class Renderer:
         qp.fillRect(x0, y0, self.gsWidth - 1, self.gsHeight - 1, self.boardColor)
 
     # side = "white" "black"
+    # TODO: this would end up in user code, outside engine
     def drawPiece(self, qp, xSquare, ySquare, side, king):
         pieceOffX = (self.gsWidth - self.pieceWidth) / 2
         pieceOffY = (self.gsHeight - self.pieceHeight) / 2
@@ -75,7 +76,7 @@ class Renderer:
 
         qp.drawEllipse(x0, y0, self.pieceWidth, self.pieceHeight)
 
-
+    # TODO: this would go outside engine as well
     def drawBoard(self, qp, gameboard, selectedX, selectedY):
         for x in range(8):
             for y in range(8):
