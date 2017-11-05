@@ -14,37 +14,6 @@ from PyQt5.QtCore import Qt,pyqtSlot
 from multiprocessing import Process, Queue
 
 
-'''
-class RenderLoop(QtCore.QThread):
-    #renderNeeded = QtCore.pyqtSignal(object)
-    #renderNeeded = QtCore.pyqtSignal(float, float)
-    renderNeeded = QtCore.pyqtSignal()
-
-    x = 50
-    y = 50
-
-    def __init__(self, queue):
-        QtCore.QThread.__init__(self)
-        self.queue = queue
-
-    def run(self):
-        while True:
-            try:
-                data = self.queue.get_nowait()
-                m = message.Message()
-                m.inflate(data)
-                self.x = m.data["ballX"]
-                self.y = m.data["ballY"]
-                print("POS RECIEVED: {}, {}".format(self.x, self.y))
-                try: self.renderNeeded.emit()
-                except Exception as e:
-                    traceback.print_exc()
-            except: pass
-            time.sleep(.001)
-'''
-
-
-
 class Renderer:
     
     def __init__(self, widget):
@@ -59,6 +28,7 @@ class Renderer:
         self.offsetX = 10
         self.offsetY = 10
 
+        self.lineColor = QColor(40, 100, 150)
         self.boardColor = QColor(40, 100, 150)
 
 
@@ -72,10 +42,10 @@ class Renderer:
         self.gsWidth = width / self.xSquares
 
     def fillSquare(self, qp, xSquare, ySquare):
-        x0 = xSquare*self.gsWidth + self.offsetX
-        y0 = ySquare*self.gsHeight + self.offsetY
+        x0 = xSquare*self.gsWidth + self.offsetX + 1
+        y0 = ySquare*self.gsHeight + self.offsetY + 1
         
-        qp.fillRect(x0, y0, self.gsWidth, self.gsHeight, self.boardColor)
+        qp.fillRect(x0, y0, self.gsWidth - 1, self.gsHeight - 1, self.boardColor)
 
     def render(self):
         qp = QPainter()
@@ -83,19 +53,20 @@ class Renderer:
 
         #width, height = self.getWidgetSize()
 
-        pen = QPen(self.boardColor)
+        pen = QPen(self.lineColor)
         qp.setPen(pen)
+        
+        for y in range(0, self.ySquares):
+            for x in range(0, self.xSquares):
+                if (x + y) % 2 == 1:
+                    self.fillSquare(qp, x, y)
 
         for i in range(0, self.ySquares + 1): # + 1 to draw ending line
             qp.drawLine(self.offsetX, i*self.gsHeight + self.offsetY, self.xSquares*self.gsWidth + self.offsetX, i*self.gsHeight + self.offsetY)
 
         for i in range(0, self.xSquares + 1):
-            qp.drawLine(i*self.gsWidth + self.offsetX, self.offsetY, i*self.gsWidth + self.offsetY, self.ySquares*self.gsHeight + self.offsetY)
+            qp.drawLine(i*self.gsWidth + self.offsetX, self.offsetY, i*self.gsWidth + self.offsetX, self.ySquares*self.gsHeight + self.offsetY)
 
-        for y in range(0, self.ySquares):
-            for x in range(0, self.xSquares):
-                if (x + y) % 2 == 1:
-                    self.fillSquare(qp, x, y)
 
         qp.end()
     
@@ -107,16 +78,15 @@ class PongWindow(QWidget):
         self.initUI()
         self.x = 50
         self.y = 50
-        self.mouseReleaseEvent = self.clickEvent
+        self.mouseReleaseEvent = self.mouseReleaseEvent
+        self.mousePressEvent = self.mousePressEvent
+        self.mouseMoveEvent = self.mouseMoveEvent
         
-        #self.loop = RenderLoop(self.inputQueue)
-        #self.loop.renderNeeded.connect(self.positionUpdated)
-        #self.loop.renderNeeded.connect(self.positionUpdated)
-        #print(self.loop.renderNeeded)
-        #self.loop.start()
-
         self.renderer = Renderer(self)
 
+        self.dragging = False
+        self.xOff = 0
+        self.yOff = 0
 
 
     #@pyqtSlot(float, float)
@@ -133,32 +103,29 @@ class PongWindow(QWidget):
         self.show()
 
     def paintEvent(self, event):
-
         self.renderer.render()
-        
-        #print("painting")
-        #qp = QPainter()
-        #qp.begin(self)
-        #self.drawRectangle(event, qp, self.x, self.y, 20, 20, [0, 150, 250])
-
-        #for i in range(0, int(self.rect().height() / 10)):
-            #i += 1
-            #qp.drawLine(0,i*10,self.rect().width(),i*10)
-#
-        #for i in range(0, int(self.rect().width() / 10)):
-            #i += 1
-            #qp.drawLine(i*10,0,i*10,self.rect().height())
-            #
-        #
-        #qp.end()
     
-    def clickEvent(self, event):
+    def mouseMoveEvent(self, event):
+        if self.dragging:
+            self.renderer.offsetX = event.x() - self.xOff
+            self.renderer.offsetY = event.y() - self.yOff
+            self.repaint()
+            
+
+    def mousePressEvent(self, event):
+        self.dragging = True
+        self.xOff = event.x() - self.renderer.offsetX
+        self.yOff = event.y() - self.renderer.offsetY
+            
+    
+    def mouseReleaseEvent(self, event):
+        self.dragging = False
         #clicked = { "dtype" : "clicked", "clickX" : event.x(), "clickY" : event.y() }
         #print("ball: ({}, {}) vs click: ({}, {})".format(self.x, self.y, event.x(), event.y()))
         #data = message.Message("data", "CID", clicked)
         #data.deflate()
         #self.outputQueue.put(data.deflate())
-        pass
+
 
     # color = [r, g, b]
     def drawRectangle(self, event, qp, x, y, width, height, color):
@@ -169,17 +136,9 @@ if __name__ == '__main__':
     logInstance = Logger()
     logInstance.addLogger(loggers.StreamLogger([0]))
     setLoggerInstance(logInstance)
-
-    #inputQueue = Queue()
-    #outputQueue = Queue()
-    #p = Process(target=connect, args=(inputQueue,outputQueue))
-    #p.start()
     
     log("Setting up window...")
     app = QApplication(sys.argv)
-    #ex = PongWindow(inputQueue, outputQueue)
     ex = PongWindow()
-    #sys.exit(app.exec_())
     app.exec_()
-    #p.join()
     log("Done!")
