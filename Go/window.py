@@ -43,6 +43,39 @@ class RenderLoop(QtCore.QThread):
             time.sleep(.001)
 '''
 
+
+
+class Renderer:
+    
+    def __init__(self, widget):
+        self.widget = widget
+
+        self.xSquares = 8
+        self.ySquares = 8
+
+
+    def render(self):
+        qp = QPainter()
+        qp.begin(self.widget)
+
+        height = self.widget.rect().height()
+        width = self.widget.rect().width()
+
+        gsHeight = height / self.ySquares
+        gsWidth = width / self.xSquares
+
+        for i in range(0, self.ySquares):
+            i += 1
+            qp.drawLine(0,i*gsHeight,width,i*gsHeight)
+
+        for i in range(0, self.xSquares):
+            i += 1
+            qp.drawLine(i*gsWidth,0,i*gsWidth,height)
+
+        qp.end()
+
+    
+
 class PongWindow(QWidget):
 
     def __init__(self):
@@ -58,6 +91,9 @@ class PongWindow(QWidget):
         #print(self.loop.renderNeeded)
         #self.loop.start()
 
+        self.renderer = Renderer(self)
+
+
 
     #@pyqtSlot(float, float)
     def positionUpdated(self):
@@ -68,26 +104,29 @@ class PongWindow(QWidget):
 
     def initUI(self):
         log("Initializing...")
-        self.setGeometry(300, 300, 480, 270)
+        self.setGeometry(300, 300, 480, 480)
         self.setWindowTitle("test")
         self.show()
 
     def paintEvent(self, event):
-        #print("painting")
-        qp = QPainter()
-        qp.begin(self)
-        self.drawRectangle(event, qp, self.x, self.y, 20, 20, [0, 150, 250])
 
-        for i in range(0, int(self.rect().height() / 10)):
-            i += 1
-            qp.drawLine(0,i*10,self.rect().width(),i*10)
-
-        for i in range(0, int(self.rect().width() / 10)):
-            i += 1
-            qp.drawLine(i*10,0,i*10,self.rect().height())
-            
+        self.renderer.render()
         
-        qp.end()
+        #print("painting")
+        #qp = QPainter()
+        #qp.begin(self)
+        #self.drawRectangle(event, qp, self.x, self.y, 20, 20, [0, 150, 250])
+
+        #for i in range(0, int(self.rect().height() / 10)):
+            #i += 1
+            #qp.drawLine(0,i*10,self.rect().width(),i*10)
+#
+        #for i in range(0, int(self.rect().width() / 10)):
+            #i += 1
+            #qp.drawLine(i*10,0,i*10,self.rect().height())
+            #
+        #
+        #qp.end()
     
     def clickEvent(self, event):
         #clicked = { "dtype" : "clicked", "clickX" : event.x(), "clickY" : event.y() }
