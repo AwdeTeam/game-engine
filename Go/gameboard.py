@@ -14,7 +14,7 @@ class Grid():
 
 class Gameboard(Grid):
     def __init__(self):
-        Grid.__init__(self, 8, 8, [("token":"empty")])
+        Grid.__init__(self, 8, 8, [("token","empty")])
         for i in range(7):
             for j in range(7):
                 if(j < 2):
@@ -64,7 +64,7 @@ class Gameboard(Grid):
         token = self.getToken(x, y)
         
         jumps = self.jumps(x1, y1, token)
-        self.setToken(x0,y0 "empty")
+        self.setToken(x0,y0, "empty")
         self.setToken(x1,y1, token)
 
         if(y1 == 7 and "black" in token):
@@ -114,8 +114,8 @@ class Gameboard(Grid):
         if((x1,y1) not in jumps):
             return [], False
 
-        self.setToken(x0,y0 "empty")
-        self.setToken(xj,yj "empty")
+        self.setToken(x0,y0, "empty")
+        self.setToken(xj,yj, "empty")
         self.setToken(x1,y1, token)
 
         if(y1 == 7 and "black" in token):
