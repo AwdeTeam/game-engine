@@ -53,24 +53,36 @@ class Renderer:
         self.xSquares = 8
         self.ySquares = 8
 
+        self.gsHeight = 50
+        self.gsWidth = 50
+
+        self.offsetX = 10
+        self.offsetY = 10
+
+    def getWidgetSize(self):
+        return self.widget.rect().width(), self.widget.rect().height()
+
+    def autoCalcGSToScale(self):
+        width, height = self.getWidgetSize()
+
+        self.gsHeight = height / self.ySquares
+        self.gsWidth = width / self.xSquares
 
     def render(self):
         qp = QPainter()
         qp.begin(self.widget)
 
-        height = self.widget.rect().height()
-        width = self.widget.rect().width()
+        #width, height = self.getWidgetSize()
 
-        gsHeight = height / self.ySquares
-        gsWidth = width / self.xSquares
 
-        for i in range(0, self.ySquares):
-            i += 1
-            qp.drawLine(0,i*gsHeight,width,i*gsHeight)
+        #gsHeight = height / self.ySquares
+        #gsWidth = width / self.xSquares
 
-        for i in range(0, self.xSquares):
-            i += 1
-            qp.drawLine(i*gsWidth,0,i*gsWidth,height)
+        for i in range(0, self.ySquares + 1): # + 1 to draw ending line
+            qp.drawLine(self.offsetX, i*self.gsHeight + self.offsetY, self.xSquares*self.gsWidth + self.offsetX, i*self.gsHeight + self.offsetY)
+
+        for i in range(0, self.xSquares + 1):
+            qp.drawLine(i*self.gsWidth + self.offsetX, self.offsetY, i*self.gsWidth + self.offsetY, self.ySquares*self.gsHeight + self.offsetY)
 
         qp.end()
 
