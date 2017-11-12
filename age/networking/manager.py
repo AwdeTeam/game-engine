@@ -35,6 +35,15 @@ class ClientSideConnection:
             except:
                 #traceback.print_exc()
                 pass
+
+            try:
+                data = self.outputQueue.get_nowait()
+                util.send_msg(self.socket, data)
+                print("SENDING")
+            except: 
+                #traceback.print_exc()
+                pass
+        
             # TODO: dynamic timing here? 
             time.sleep(.1)
 
@@ -55,6 +64,7 @@ def connectionAcceptor(queue, host, port):
         print("New client connecting...")
         queue.put(clientSocket)
         queue.put(addr)
+        print("Queue filled by connectionAcceptor")
 
 # PROCESS
 def clientListener(queue, socket, addr):
@@ -96,14 +106,18 @@ class NetworkManager:
         while running:
 
             # check acceptor queue
+            print("Checking acceptor")
             data = None
             try: data = self.acceptorQueue.get_nowait()
             except: pass
             if data:
+                print("Got data from the acceptor queue")
                 if self.acceptorWaitingMode == 'socket':
+                    print("It's the socket")
                     self.acceptorWaitingSocket = data
                     self.acceptorWaitingMode = 'addr'
                 else:
+                    print("It's more than just a socket through")
                     self.startClientListener(self.acceptorWaitingSocket, data)
                     #self.clientSockets.append(self.acceptorWaitingSocket)
                     self.clientSockets[self.nextClientID] = self.acceptorWaitingSocket
@@ -116,11 +130,15 @@ class NetworkManager:
                     
 
             # check each client queue
+            print("Checking input")
             for inputQueue in self.clientInputQueues:
+                print("CHECKING INPUT")
                 data = None
                 try: data = inputQueue.get_nowait()
                 except: pass
-                if data: self.engineInputQueue.put(data)
+                if data: 
+                    print("YES, I GOT DATA")
+                    self.engineInputQueue.put(data)
 
 
             # TODO TODO: put handling of engine output inside try except INSIDE OF A LOOP
@@ -128,6 +146,7 @@ class NetworkManager:
             # dynamic sleeping
 
             # check engine output
+            print("Checking output")
             data = None
             try: data = self.engineOutputQueue.get_nowait()
             except: pass
@@ -151,8 +170,8 @@ class NetworkManager:
                 else:
                     sock = self.clientSockets[msg.clientID]
                     util.send_msg(sock, data)
-        
-        time.sleep(.1) # TODO: dynamic sleeping
+            print("Done")
+            time.sleep(.1) # TODO: dynamic sleeping
     
     def startConnectionAcceptor(self, host, port):
         self.acceptorQueue = Queue()

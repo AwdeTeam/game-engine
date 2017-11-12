@@ -89,7 +89,7 @@ class PongWindow(QWidget):
         data = message.Message("data", "CID", clicked)
         #data.deflate()
         #self.outputQueue.put(data.deflate())
-        self.engine.sendMessage(data)
+        self.engine.sendMessage(data.deflate())
 
     # color = [r, g, b]
     def drawRectangle(self, event, qp, x, y, width, height, color):
