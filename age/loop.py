@@ -1,7 +1,8 @@
 import age.events
 import time
 
-def run(gameLogicManager, gameGraphicsManager):
+#def run(gameLogicManager, gameGraphicsManager):
+def run(gameLogicManager):
     print("Loop - run")
     gameRunning = True 
     centralEventManager = age.events.CentralEventManager()

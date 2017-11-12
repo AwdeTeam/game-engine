@@ -3,12 +3,14 @@ import socket
 from multiprocessing import Process, Queue
 import traceback
 
-from message import Message
-import util
+from age.networking.message import Message
+import age.networking.util as util
 
 
 def clientSideConnectionEntryPoint(inputQueue, outputQueue, ip, port):
     connection = ClientSideConnection(inputQueue, outputQueue, ip, port)
+    # TODO: return connection? IDK if that's necessary, it's not the process
+    # reference, but might be nice for gracefully shutting down?
 
 class ClientSideConnection:
     def __init__(self, inputQueue, outputQueue, ip, port):
@@ -25,11 +27,16 @@ class ClientSideConnection:
     def route(self):
         running = True
         while running:
+            print("Client Listening")
             try:
-                msg = util.recv_msg(s)
+                msg = util.recv_msg(self.socket)
                 self.inputQueue.put(msg)
+                print("GOT DATA")
             except:
+                #traceback.print_exc()
                 pass
+            # TODO: dynamic timing here? 
+            time.sleep(.1)
 
 
 # can be started as a process target

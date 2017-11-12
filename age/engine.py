@@ -1,15 +1,17 @@
 #import networking.manager as net
+import traceback
 
 from multiprocessing import Process, Queue
 
-from networking import manager, message.Message
+from age.networking import manager
+from age.networking.message import Message
+import age.loop
 
 class Engine:
     def __init__(self):
         self.netInQueue = None
         self.netOutQueue = None
 
-    # TODO: pass in port/other info stuffs
     def startServerNetworking(self, ip, port):
         print("Starting network I/O...")
         self.netInQueue = Queue()
@@ -20,14 +22,16 @@ class Engine:
         p.start()
         print("Network I/O running")
 
-    def startServerGameLoop(self):
+    def startServerGameLoop(self, gameLogicManager):
         print("Starting server game loop...")
-        # TODO: start game loop
+        age.loop.run(gameLogicManager)
+        
 
-    def startServer(self, ip, port):
+    # TODO: check if gameLogicManager is really necessary?
+    def startServer(self, ip, port, gameLogicManager):
         print("Starting server...")
         self.startServerNetworking(ip, port)
-        self.startServerGameLoop()
+        self.startServerGameLoop(gameLogicManager) # TODO: comment out if this ends up blocking (pretty sure it does)
 
     # TODO: allow to specify allotted time (elsewhere, in an engine
     # variable/constraint to process network messages (for
@@ -37,13 +41,15 @@ class Engine:
     def getMessages(self):
         msgList = []
 
-        # TODO: loop
+        # TODO: loop? Maybe have another version of this function that "blocks"
+        # (loops until gets message)
         try:
-            data = self.netInQueue.get_nowwait()
+            data = self.netInQueue.get_nowait()
             msg = Message.inflate(data)
             msgList.append(msg)
         except Exception as e: 
-            traceback.print_exc()
+            #traceback.print_exc()
+            pass
 
         return msgList
 
