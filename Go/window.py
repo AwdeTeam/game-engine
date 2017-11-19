@@ -146,7 +146,7 @@ class GoWindow(QWidget):
 
     def initUI(self):
         log("Initializing...")
-        self.setGeometry(300, 300, 480, 480)
+        self.setGeometry(10, 300, 280, 480)
         self.setWindowTitle("test")
         self.show()
 
