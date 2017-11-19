@@ -88,10 +88,6 @@ class NetworkManager:
         self.engineInputQueue = engineInputQueue
         self.engineOutputQueue = engineOutputQueue
         self.startConnectionAcceptor(ip, port)
-        self.buffer = []
-        self.bufferOffset = 0
-        self.clientCongestionWindows = [] #cid:(start, stop)
-        self.congestionSize = 5
         self.route()
 
     def __del__(self):
@@ -152,14 +148,6 @@ class NetworkManager:
             except: pass
             
             if data:
-                self.buffer.append(data)
-                #TODO This isn't done yet...
-            
-            # if engine output, send that message to signified client
-            if len(self.buffer) > 0:
-                for clientID in self.clientSockets:
-                    window = self.clientCongestionWindows[clientID]
-                    
                 #message
                 msg = Message.inflate(data)
                 
