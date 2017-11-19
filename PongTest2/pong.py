@@ -36,7 +36,7 @@ class PongGameLogic:
         self.ballpos[1] += self.ballvel[1]*.1
         
         state = { "dtype" : "gameState", "ballX" : self.ballpos[0], "ballY" : self.ballpos[1], "size" : self.ballsiz }
-        stateMsg = message.Message("data", "CID", state)
+        stateMsg = message.Message("data", -1, state)
         #stateMsg.deflate()
         print("POS SENT: {}, {}".format(self.ballpos[0], self.ballpos[1]))
         #self.outputQueue.put(stateMsg.deflate())

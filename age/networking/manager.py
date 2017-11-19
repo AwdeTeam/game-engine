@@ -29,7 +29,8 @@ class ClientSideConnection:
         while running:
             print("Client Listening")
             try:
-                msg = util.recv_msg(self.socket)
+                data = util.recv_msg(self.socket)
+                msg = Message.inflate(data)
                 self.inputQueue.put(msg)
                 print("GOT DATA")
             except:
@@ -38,7 +39,7 @@ class ClientSideConnection:
 
             try:
                 data = self.outputQueue.get_nowait()
-                util.send_msg(self.socket, data)
+                util.send_msg(self.socket, data.deflate())
                 print("SENDING")
             except: 
                 #traceback.print_exc()
@@ -71,6 +72,7 @@ def clientListener(queue, socket, addr):
     running = True
     while running:
         data = util.recv_msg(socket)
+        msg = Message.inflate(data)
         queue.put(data)
 
 class NetworkManager:
@@ -117,10 +119,10 @@ class NetworkManager:
                     self.startClientListener(self.acceptorWaitingSocket, data)
                     #self.clientSockets.append(self.acceptorWaitingSocket)
                     self.clientSockets[self.nextClientID] = self.acceptorWaitingSocket
-                    self.clientCongestionWindows[self.nextClientID] = (0, self.congestionSize)
                     self.nextClientID += 1
                     self.acceptorWaitingSocket = None
                     self.acceptorWaitingMode = 'socket'
+
 
                     # send along client id
                     
@@ -147,17 +149,27 @@ class NetworkManager:
             try: data = self.engineOutputQueue.get_nowait()
             except: pass
             
+            print("Before checking if there was something on the queue")
             if data:
                 #message
-                msg = Message.inflate(data)
+                print("SENDING DATA")
+                #msg = Message.inflate(data)
+                print("Message inflated")
                 
-                if msg.clientID == -1: # signifying broadcast
-                    for clientID in self.clientSockets:
+                if data.clientID == -1: # signifying broadcast
+                    rawdata = data.deflate()
+                    print("It's a broadcast")
+                    for clientID in self.clientSockets.keys():
+                        print("Sending stuff to client ", str(clientID))
                         sock = self.clientSockets[clientID]
-                        util.send_msg(sock, data)
+                        util.send_msg(sock, rawdata)
                 else:
-                    sock = self.clientSockets[msg.clientID]
-                    util.send_msg(sock, data)
+                    print("It's not a broadcast")
+                    sock = self.clientSockets[data.clientID]
+                    util.send_msg(sock, rawdata)
+
+                print("Message should have been sent")
+
             print("Done")
             time.sleep(.1) # TODO: dynamic sleeping
     
@@ -173,3 +185,4 @@ class NetworkManager:
         p = Process(target=clientListener, args=(q, socket, addr))
         self.clientInputProcesses.append(p)
         p.start()
+        print("Now listening!")

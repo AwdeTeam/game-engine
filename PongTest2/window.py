@@ -86,10 +86,11 @@ class PongWindow(QWidget):
     def clickEvent(self, event):
         clicked = { "dtype" : "clicked", "clickX" : event.x(), "clickY" : event.y() }
         print("ball: ({}, {}) vs click: ({}, {})".format(self.x, self.y, event.x(), event.y()))
-        data = message.Message("data", "CID", clicked)
+        data = message.Message("data", -1, clicked)
         #data.deflate()
         #self.outputQueue.put(data.deflate())
-        self.engine.sendMessage(data.deflate())
+        #self.engine.sendMessage(data.deflate())
+        self.engine.sendMessage(data)
 
     # color = [r, g, b]
     def drawRectangle(self, event, qp, x, y, width, height, color):

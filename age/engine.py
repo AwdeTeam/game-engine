@@ -45,8 +45,9 @@ class Engine:
         # (loops until gets message)
         try:
             data = self.netInQueue.get_nowait()
-            msg = Message.inflate(data)
-            msgList.append(msg)
+            msgList.append(data)
+            #msg = Message.inflate(data)
+            #msgList.append(msg)
         except Exception as e: 
             #traceback.print_exc()
             pass
