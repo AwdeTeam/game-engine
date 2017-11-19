@@ -73,15 +73,19 @@ class Grid:
             self.cells = [ generator(i%width, int(i/width)) for i in range(width * height) ]
     
     def __getitem__(self, item):
-        if(type(item) != type(0)):
-            raise TypeError("Grid only supports integer indicies, not {}".format(type(item)))
-        if(abs(item) >= self.height):
-            raise IndexError("Index Out of Bounds: tried to get row {}, but the height is {}".format(item, self.height))
-        
-        return self.cells[item*self.width:(item+1)*self.width]
+        if(type(item) != type(0) and type(item) != type(slice(0,0))):
+            raise TypeError("Grid only supports integer indicies or slices, not {}".format(type(item)))
+
+        if(type(item) == type(0)):
+            if(abs(item) >= self.height):
+                raise IndexError("Index Out of Bounds: tried to get row {}, but the height is {}".format(item, self.height))
+            return self.cells[item*self.width:(item+1)*self.width]
+        else:
+            print(item)
+            return self.cells[item.start*self.width:(item.stop+1)*self.width]
 
     def __setitem__(self, item, value):
-        if(type(item) != type(0)):
+        if(type(item) != type(0) or type(item) ):
             raise TypeError("Grid only supports integer indicies, not {}".format(type(item)))
         if(abs(item) >= self.height):
             raise IndexError("Index Out of Bounds: tried to get row {}, but the height is {}".format(item, self.height))
