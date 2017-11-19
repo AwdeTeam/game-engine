@@ -65,7 +65,6 @@ def connectionAcceptor(queue, host, port):
         print("New client connecting...")
         queue.put(clientSocket)
         queue.put(addr)
-        print("Queue filled by connectionAcceptor")
 
 # PROCESS
 def clientListener(queue, socket, addr):
@@ -73,7 +72,7 @@ def clientListener(queue, socket, addr):
     while running:
         data = util.recv_msg(socket)
         msg = Message.inflate(data)
-        queue.put(data)
+        queue.put(msg)
 
 class NetworkManager:
     def __init__(self, engineInputQueue, engineOutputQueue, ip, port):
@@ -104,18 +103,14 @@ class NetworkManager:
         while running:
 
             # check acceptor queue
-            print("Checking acceptor")
             data = None
             try: data = self.acceptorQueue.get_nowait()
             except: pass
             if data:
-                print("Got data from the acceptor queue")
                 if self.acceptorWaitingMode == 'socket':
-                    print("It's the socket")
                     self.acceptorWaitingSocket = data
                     self.acceptorWaitingMode = 'addr'
                 else:
-                    print("It's more than just a socket through")
                     self.startClientListener(self.acceptorWaitingSocket, data)
                     #self.clientSockets.append(self.acceptorWaitingSocket)
                     self.clientSockets[self.nextClientID] = self.acceptorWaitingSocket
@@ -128,7 +123,6 @@ class NetworkManager:
                     
 
             # check each client queue
-            print("Checking input")
             for inputQueue in self.clientInputQueues:
                 print("CHECKING INPUT")
                 data = None
@@ -144,33 +138,27 @@ class NetworkManager:
             # dynamic sleeping
 
             # check engine output
-            print("Checking output")
             data = None
             try: data = self.engineOutputQueue.get_nowait()
             except: pass
             
-            print("Before checking if there was something on the queue")
             if data:
                 #message
                 print("SENDING DATA")
                 #msg = Message.inflate(data)
-                print("Message inflated")
                 
                 if data.clientID == -1: # signifying broadcast
                     rawdata = data.deflate()
-                    print("It's a broadcast")
                     for clientID in self.clientSockets.keys():
                         print("Sending stuff to client ", str(clientID))
                         sock = self.clientSockets[clientID]
                         util.send_msg(sock, rawdata)
                 else:
-                    print("It's not a broadcast")
                     sock = self.clientSockets[data.clientID]
                     util.send_msg(sock, rawdata)
 
                 print("Message should have been sent")
 
-            print("Done")
             time.sleep(.1) # TODO: dynamic sleeping
     
     def startConnectionAcceptor(self, host, port):
@@ -185,4 +173,3 @@ class NetworkManager:
         p = Process(target=clientListener, args=(q, socket, addr))
         self.clientInputProcesses.append(p)
         p.start()
-        print("Now listening!")

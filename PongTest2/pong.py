@@ -12,7 +12,7 @@ import socket
 from multiprocessing import Process, Queue
 
 INITIAL_POSITION = [ 50, 50]
-INITIAL_VELOCITY = [  1,  3]
+INITIAL_VELOCITY = [  10,  10]
 BALL_SIZE = 20
 
 class PongGameLogic:
@@ -46,7 +46,7 @@ class PongGameLogic:
         msgList = self.engine.getMessages()
         for msg in msgList:
             if msg.type == "data":
-                print("Incoming data: {}\t\tBall Position: ({},{})".format(data.data,self.ballpos[0],self.ballpos[1]))
+                print("Incoming data: {}\t\tBall Position: ({},{})".format(msg.data,self.ballpos[0],self.ballpos[1]))
                 if(msg.data["dtype"] == "clicked"):
                     print("Clicked on Ball!")
                     self.checkClick(int(msg.data["clickX"]), int(msg.data["clickY"]))

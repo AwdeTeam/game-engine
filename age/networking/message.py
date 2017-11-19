@@ -12,16 +12,12 @@ class Message:
 
     @classmethod
     def inflate(cls, msg):
-        print("About to inflate")
-        print(msg)
         msgData = json.loads(msg)
         type = msgData["type"]
         clientID = msgData["clientID"]
         data = msgData["data"]
-        print("Finished loading json")
         
         message = cls(type, clientID, data)
-        print("Made the message")
         return message
     
     @classmethod
