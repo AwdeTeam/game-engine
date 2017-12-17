@@ -3,6 +3,8 @@ from PyQt5.QtGui import QPainter, QColor, QFont, QCursor, QPen, QBrush
 import PyQt5.QtCore as QtCore
 from PyQt5.QtCore import Qt.pyqtSlot
 
+from age.gui.graphics import Graphics
+
 import time
 
 # TODO: system of renderers? (Each type of renderer, like grid renderer, gets
@@ -60,6 +62,9 @@ class Window(QWidget):
         self.processingThread = ProcessingThread(self, processingLoop)
         self.processingThread.stateChanged.connect(self.stateChange)
 
+        self.qp = QPainter()
+        self.graphics = Graphics(self.qp)
+
     def display(self):
         self.show()
         self.processingThread.start()
@@ -95,5 +100,7 @@ class Window(QWidget):
         self.preMouseReleaseEvent(event)
 
     def paintEvent(self, event):
+        qp.begin(self)
         for visualEntity in visualEntities:
-            visualEntity.render(event)
+            visualEntity.render(event, self.graphics)
+        qp.end()
