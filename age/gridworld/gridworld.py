@@ -30,6 +30,9 @@ class Entity:
             entity = Entity()
             entity.load(entityStr)
             self.entities.append(entity)
+    
+    def render(self, event, graphics):
+        print("no-op")
 
 class GridCell:
     def __init__(self, *args, **kwargs):
