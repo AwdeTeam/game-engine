@@ -67,6 +67,11 @@ class Window(QWidget):
         self.view.setGeometry(posx, posy, width, height)
         self.view.setWindowTitle(title)
         self.view.show()
+
+
+        self.view.setDragMode(QGraphicsView.ScrollHandDrag)
+
+        
         self.scenes = []
         self.display()
 
