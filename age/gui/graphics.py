@@ -1,7 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QApplication
 from PyQt5.QtGui import QPainter, QColor, QFont, QCursor, QPen, QBrush
 import PyQt5.QtCore as QtCore
-from PyQt5.QtCore import Qt.pyqtSlot
+from PyQt5.QtCore import Qt,pyqtSlot
 
 class Graphics:
 
@@ -17,7 +17,7 @@ class Graphics:
     def setBorderColor(color):
         self.defBorderColor = color
 
-    def setThickness(thickness)
+    def setThickness(thickness):
         self.defThickness = thickness
 
     # None means default

@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QWidget, QApplication
+from PyQt5.QtWidgets import QWidget, QApplication, QGraphicsView, QGraphicsScene, QGraphicsItem
 from PyQt5.QtGui import QPainter, QColor, QFont, QCursor, QPen, QBrush
 import PyQt5.QtCore as QtCore
-from PyQt5.QtCore import Qt.pyqtSlot
+from PyQt5.QtCore import Qt,pyqtSlot
 
 from age.gui.graphics import Graphics
 
@@ -49,29 +49,41 @@ class Window(QWidget):
     # object, that returns true if state is update, and false if not
     # TODO: also pass in framerate stuff, so processingthread can handle for
     # sleep?
-    def __init__(self, width, height, title, posx=100, posy=100, processingLoop):
+    def __init__(self, width, height, title, posx=100, posy=100, processingLoop=None):
         super().__init__()
-        self.setGeometry(posx, posy, width, height)
-        self.setWindowTitle(title)
         self.visualEntities = [] # expects anything with a certain set of functions (.render() etc)
 
-        self.mouseDown = False
-        self.mouseDownX = 0 # sort of acts like an offset? (visualEntities with historical access to this can use it to calc offset)
-        self.mouseDownY = 0 
-
+        #self.mouseDown = False
+        #self.mouseDownX = 0 # sort of acts like an offset? (visualEntities with historical access to this can use it to calc offset)
+        #self.mouseDownY = 0 
+#
         self.processingThread = ProcessingThread(self, processingLoop)
         self.processingThread.stateChanged.connect(self.stateChange)
 
-        self.qp = QPainter()
-        self.graphics = Graphics(self.qp)
+        #self.qp = QPainter()
+        #self.graphics = Graphics(self.qp)
+
+        self.view = QGraphicsView()
+        self.view.setGeometry(posx, posy, width, height)
+        self.view.setWindowTitle(title)
+        self.view.show()
+        self.scenes = []
+        self.display()
 
     def display(self):
-        self.show()
+        #self.show()
         self.processingThread.start()
 
     def stateChange(self):
         self.repaint()
 
+    def addScene(self, scene):
+        self.scenes.append(scene)
+
+    def setScene(self, index):
+        self.view.setScene(self.scenes[index])
+
+'''
     def preMouseMoveEvent(self, event): pass
     def postMouseMoveEvent(self, event): pass
     def mouseMoveEvent(self, event):
@@ -104,3 +116,4 @@ class Window(QWidget):
         for visualEntity in visualEntities:
             visualEntity.render(event, self.graphics)
         qp.end()
+'''
