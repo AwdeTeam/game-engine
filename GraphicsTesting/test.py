@@ -4,12 +4,13 @@ import struct
 sys.path.append("../")
 
 from PyQt5.QtWidgets import QApplication, QGraphicsScene, QGraphicsItem
+from PyQt5.QtGui import QPen, QColor, QBrush
 
 from age.gui.window import Window
 from age.logger.logger import *
 from age.logger import loggers
 
-from age.gui.objects.grid import Grid
+from age.gui.objects.grid import Grid, GUIElement
 
 
 def loop(window):
@@ -35,6 +36,11 @@ if __name__ == '__main__':
     scene.addLine(10,10,500,500)
     g = Grid(10, 10, 10, 10)
     scene.addItem(g)
+
+    #scene.addRect(150,0,40,20, QPen(), QBrush(QColor(30,60,120)))
+
+    elem = GUIElement()
+    scene.addItem(elem)
 
 
     

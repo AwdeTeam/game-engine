@@ -1,4 +1,5 @@
 from PyQt5.QtWidgets import QGraphicsScene, QGraphicsItem
+from PyQt5.QtGui import QPainter, QColor, QFont, QCursor, QPen, QBrush
 from PyQt5.QtCore import QRectF
 
 
@@ -27,3 +28,16 @@ class Grid(QGraphicsItem):
     def boundingRect(self):
         return QRectF(0.0, 0.0, float(self.xSquares*self.gsWidth), float(self.ySquares*self.gsHeight))
 
+# NOTE: this is for testing only
+class GUIElement(QGraphicsItem):
+    def __init__(self):
+        super(GUIElement, self).__init__()
+        self.setFlag(self.ItemIgnoresTransformations, True)
+        self.setFlag(self.ItemIsMovable, False)
+
+
+    def paint(self, painter, option, widget):
+        painter.fillRect(150, 0, 40, 20, QBrush(QColor(30,60,120)))
+        
+    def boundingRect(self):
+        return QRectF(150.0, 0.0, 40.0, 20.0)
