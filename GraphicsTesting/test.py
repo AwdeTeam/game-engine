@@ -9,6 +9,8 @@ from age.gui.window import Window
 from age.logger.logger import *
 from age.logger import loggers
 
+from age.gui.objects.grid import Grid
+
 
 def loop(window):
     print("Greetings from the loop")
@@ -29,7 +31,13 @@ if __name__ == '__main__':
 
     # create a scene
     scene = QGraphicsScene()
-    scene.addLine(10,10,500,500)
+    
+    #scene.addLine(10,10,500,500)
+    g = Grid(10, 10, 10, 10)
+    scene.addItem(g)
+
+
+    
     w.addScene(scene)
     w.setScene(0)
 
